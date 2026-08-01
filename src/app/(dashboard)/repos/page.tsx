@@ -155,6 +155,7 @@ export default function ReposPage() {
             setSelectedRepos(new Set());
           }}
           variant={showGitHubRepos ? "outline" : "default"}
+          className="transition-all"
         >
           {showGitHubRepos ? (
             <>
@@ -164,18 +165,18 @@ export default function ReposPage() {
           ) : (
             <>
               <Plus className="size-4" />
-              Add Repository
+              Add repository
             </>
           )}
         </Button>
       </div>
 
       {showGitHubRepos && (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="border-b border-border/60 bg-muted/30 px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-semibold">Import GitHub Repositories</h2>
+                <h2 className="font-semibold">Import GitHub repositories</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Select repositories to import from GitHub.
                 </p>
@@ -185,6 +186,7 @@ export default function ReposPage() {
                 size={"icon-sm"}
                 onClick={() => githubRepos.refetch()}
                 disabled={githubRepos.isFetching}
+                aria-label="Refresh repository list"
               >
                 <RefreshCw
                   className={cn(
@@ -207,8 +209,8 @@ export default function ReposPage() {
               <div className="p-6">
                 {githubRepos.error.data?.code === "PRECONDITION_FAILED" ? (
                   <ConnectGithub
-                    title="Github account not connected"
-                    description="Connect your Github account to view your repositories."
+                    title="GitHub account not connected"
+                    description="Connect your GitHub account to view your repositories."
                   />
                 ) : (
                   <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-center">
@@ -225,7 +227,7 @@ export default function ReposPage() {
                 </div>
                 <p className="mt-4 font-medium">All caught up!</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  All your repos are already connected!
+                  All your repos are already connected.
                 </p>
               </div>
             ) : (
@@ -243,7 +245,7 @@ export default function ReposPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <button
                       onClick={selectAll}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
                     >
                       Select all
                     </button>
@@ -252,7 +254,7 @@ export default function ReposPage() {
                         <span className="text-muted-foreground">•</span>
                         <button
                           onClick={clearSelection}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
                         >
                           Clear
                         </button>
@@ -265,7 +267,6 @@ export default function ReposPage() {
                   {filteredAvailableRepos.length === 0 ? (
                     <div className="py-12 text-center">
                       <p className="text-sm text-muted-foreground">
-                        {" "}
                         No repositories match your search.
                       </p>
                     </div>
@@ -301,18 +302,9 @@ export default function ReposPage() {
                       </>
                     ) : (
                       <>
-                        {connectMutation.isPending ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            Connecting...
-                          </>
-                        ) : (
-                          <>
-                            Connect
-                            {selectedRepos.size > 0 &&
-                              ` (${selectedRepos.size})`}
-                          </>
-                        )}
+                        Connect
+                        {selectedRepos.size > 0 &&
+                          ` (${selectedRepos.size})`}
                       </>
                     )}
                   </Button>
@@ -326,7 +318,7 @@ export default function ReposPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Connected Repositories
+            Connected repositories
           </h2>
           {connectedRepos.data && connectedRepos.data.length > 0 && (
             <Badge variant={"secondary"} className="tabular-nums">
@@ -336,19 +328,19 @@ export default function ReposPage() {
         </div>
 
         {connectedRepos.isLoading ? (
-          <div className="p-6 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-xl" />
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
             ))}
           </div>
         ) : connectedRepos.data?.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
-              <div className="mx-auto h-14 rounded-full bg-muted flex items-center justify-center">
+              <div className="mx-auto size-14 rounded-full bg-muted flex items-center justify-center">
                 <FolderGit2 className="size-7 text-muted-foreground" />
               </div>
               <p className="mt-4 font-medium">
-                No connected repositories found.
+                No connected repositories yet
               </p>
               <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
                 Connect your GitHub repositories to start getting AI-powered
@@ -401,7 +393,7 @@ function ConnectedRepoCard({
                 className={cn(
                   "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                   repo.private
-                    ? "bg-emerald-500/10 group-hover:bg-emerald-500/15"
+                    ? "bg-amber-500/10 group-hover:bg-amber-500/15"
                     : "bg-emerald-500/10 group-hover:bg-emerald-500/15",
                 )}
               >
@@ -433,14 +425,15 @@ function ConnectedRepoCard({
                 variant={"ghost"}
                 size={"icon-sm"}
                 disabled={isDisconnecting}
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                aria-label={`Disconnect ${repo.fullName}`}
+                className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="size-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Disconnect Repository</AlertDialogTitle>
+                <AlertDialogTitle>Disconnect repository</AlertDialogTitle>
                 <AlertDialogDescription>
                   Are you sure you want to disconnect{" "}
                   <span className="font-medium text-foreground">
