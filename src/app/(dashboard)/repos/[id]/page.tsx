@@ -47,16 +47,16 @@ export default function RepositoryDetailPage({ params }: PageProps) {
   );
 
   const prCounts = {
-    open: pullRequests.data?.filter((pr) => pr.state === "open").length ?? 0,
+    open: pullRequests.data?.filter((pr: { state: string; }) => pr.state === "open").length ?? 0,
     closed:
-      pullRequests.data?.filter((pr) => pr.state === "closed").length ?? 0,
+      pullRequests.data?.filter((pr: { state: string; }) => pr.state === "closed").length ?? 0,
     all: pullRequests.data?.length ?? 0,
   };
 
   const filteredPullRequests = useMemo(() => {
     if (!pullRequests.data) return undefined;
     if (prState === "all") return pullRequests.data;
-    return pullRequests.data.filter((pr) => pr.state === prState);
+    return pullRequests.data.filter((pr: { state: string; }) => pr.state === prState);
   }, [pullRequests.data, prState]);
 
   if (repository.isLoading) {
@@ -236,7 +236,7 @@ export default function RepositoryDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         ) : (
-          filteredPullRequests?.map((pr) => (
+          filteredPullRequests?.map((pr: PullRequestCardProps["pr"]) => (
             <PullRequestCard key={pr.id} pr={pr} repositoryId={id} />
           ))
         )}
