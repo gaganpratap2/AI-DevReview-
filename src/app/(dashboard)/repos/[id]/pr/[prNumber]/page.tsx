@@ -49,7 +49,9 @@ export default function PullRequestDetailPage({ params }: PageProps) {
     { enabled: !isNaN(prNum) },
   );
 
-  const latestReview = trpc.review.getLatestForPR.useQuery(
+  const reviewTrpc = trpc as any;
+
+  const latestReview = reviewTrpc.review.getLatestForPR.useQuery(
     { repositoryId: id, prNumber: prNum },
     {
       enabled: !isNaN(prNum),
@@ -63,7 +65,7 @@ export default function PullRequestDetailPage({ params }: PageProps) {
     },
   );
 
-  const triggerReview = trpc.review.trigger.useMutation({
+  const triggerReview = reviewTrpc.review.trigger.useMutation({
     onSuccess: () => {
       latestReview.refetch();
       pr.refetch();

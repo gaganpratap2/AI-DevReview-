@@ -22,8 +22,7 @@ export const reviewPR = inngest.createFunction(
     id: "review-pr",
     retries: 2,
   },
-  { event: "review/pr.requested" },
-  async ({ event, step }) => {
+  async ({ event, step }: { event: ReviewPREvent; step: any }) => {
     const { reviewId, repositoryId, prNumber, userId } = event.data;
 
     await step.run("update-status-processing", async () => {
@@ -92,7 +91,7 @@ export const reviewPR = inngest.createFunction(
       const reviewResult = await step.run("generate-review", async () => {
         return reviewCode(
           pr.title,
-          files.map((f) => ({
+          files.map((f: { filename: any; status: any; additions: any; deletions: any; patch: any; }) => ({
             filename: f.filename,
             status: f.status,
             additions: f.additions,
