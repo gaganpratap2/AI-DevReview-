@@ -77,7 +77,7 @@ export const pullRequestRouter = createTRPCRouter({
           login: pr.user.login,
           avatarUrl: pr.user.avatar_url,
         },
-        headRef: pr.head.ref,
+        headRef: pr.head.ref, 
         baseRef: pr.base.ref,
         additions: pr.additions,
         deletions: pr.deletions,

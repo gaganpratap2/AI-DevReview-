@@ -53,7 +53,7 @@ export default function PullRequestDetailPage({ params }: PageProps) {
     { repositoryId: id, prNumber: prNum },
     {
       enabled: !isNaN(prNum),
-      refetchInterval: (query) => {
+      refetchInterval: (query: { state: { data: { status: any; }; }; }) => {
         const status = query.state.data?.status;
         if (status === "PENDING" || status === "PROCESSING") {
           return 2000;
