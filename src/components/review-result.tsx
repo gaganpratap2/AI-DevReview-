@@ -184,7 +184,7 @@ export function ReviewResult({ review }: ReviewResultProps) {
               </h3>
               <div
                 className={cn(
-                  "flex items-center justify-center min-w-[2.5rem] px-3 py-1.5 rounded-lg",
+                  "flex items-center justify-center min-w-10 px-3 py-1.5 rounded-lg",
                   totalIssues === 0 ? "bg-emerald-500/10" : "bg-muted",
                 )}
               >
