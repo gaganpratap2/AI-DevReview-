@@ -16,7 +16,6 @@ export default async function DashboardLayout({
     return (
         <div className="">
             <Header user={session.user}></Header>
-            {children}
             <main className="container mx-auto px-4 py-8">{children}</main>
         </div>
     )

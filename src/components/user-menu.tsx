@@ -30,7 +30,7 @@ export function UserMenu({
 
     return(
         <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
                 <Button variant={"ghost"} className="">
                     <Avatar>
                         <AvatarImage src={user.image ?? undefined} alt={user.name ?? "User"} /> 
