@@ -6,12 +6,19 @@ import {
   getGitHubAccessToken,
 } from "@/server/services/github";
 
+const cleanString = (value: string) => value.replace(/\0/g, "");
+
 export const repositoryRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
     const repositories = await ctx.db.repository.findMany({
-      where: { userId: ctx.user.id },
-      orderBy: { createdAt: "desc" },
+      where: {
+        userId: ctx.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
+
     return repositories;
   }),
 
@@ -26,14 +33,19 @@ export const repositoryRouter = createTRPCRouter({
     }
 
     const repos = await fetchGitHubRepos(accessToken);
+
     return repos.map((repo) => ({
       githubId: repo.id,
-      name: repo.name,
-      fullName: repo.full_name,
+      name: cleanString(repo.name),
+      fullName: cleanString(repo.full_name),
       private: repo.private,
-      htmlUrl: repo.html_url,
-      description: repo.description,
-      language: repo.language,
+      htmlUrl: cleanString(repo.html_url),
+      description: repo.description
+        ? cleanString(repo.description)
+        : null,
+      language: repo.language
+        ? cleanString(repo.language)
+        : null,
       stars: repo.stargazers_count,
       updatedAt: repo.updated_at,
     }));
@@ -57,34 +69,158 @@ export const repositoryRouter = createTRPCRouter({
       const result = await Promise.all(
         input.repos.map((repo) =>
           ctx.db.repository.upsert({
-            where: { githubId: repo.githubId },
+            where: {
+              githubId: repo.githubId,
+            },
+
             create: {
               userId: ctx.user.id,
               githubId: repo.githubId,
-              name: repo.name,
-              fullName: repo.fullName,
+              name: cleanString(repo.name),
+              fullName: cleanString(repo.fullName),
               private: repo.private,
-              htmlUrl: repo.htmlUrl,
+              htmlUrl: cleanString(repo.htmlUrl),
             },
+
             update: {
-              name: repo.name,
-              fullName: repo.fullName,
+              name: cleanString(repo.name),
+              fullName: cleanString(repo.fullName),
               private: repo.private,
-              htmlUrl: repo.htmlUrl,
+              htmlUrl: cleanString(repo.htmlUrl),
               updatedAt: new Date(),
             },
           }),
         ),
       );
-      return { connected: result.length };
+
+      return {
+        connected: result.length,
+      };
     }),
 
   disconnect: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       await ctx.db.repository.delete({
-        where: { id: input.id, userId: ctx.user.id },
+        where: {
+          id: input.id,
+          userId: ctx.user.id,
+        },
       });
-      return { success: true };
+
+      return {
+        success: true,
+      };
     }),
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { z } from "zod";
+// import { TRPCError } from "@trpc/server";
+// import { createTRPCRouter, protectedProcedure } from "../trpc";
+// import {
+//   fetchGitHubRepos,
+//   getGitHubAccessToken,
+// } from "@/server/services/github";
+// const cleanString = (value: string) => value.replace(/\0/g, "");
+
+// export const repositoryRouter = createTRPCRouter({
+//   list: protectedProcedure.query(async ({ ctx }) => {
+//     const repositories = await ctx.db.repository.findMany({
+//       where: { userId: ctx.user.id },
+//       orderBy: { createdAt: "desc" },
+//     });
+//     return repositories;
+//   }),
+
+//   fetchFromGithub: protectedProcedure.query(async ({ ctx }) => {
+//     const accessToken = await getGitHubAccessToken(ctx.user.id);
+
+//     if (!accessToken) {
+//       throw new TRPCError({
+//         code: "PRECONDITION_FAILED",
+//         message: "User has not authorized GitHub access",
+//       });
+//     }
+
+//     const repos = await fetchGitHubRepos(accessToken);
+//     return repos.map((repo) => ({
+//       githubId: repo.id,
+//       name: repo.name,
+//       fullName: repo.full_name,
+//       private: repo.private,
+//       htmlUrl: repo.html_url,
+//       description: repo.description,
+//       language: repo.language,
+//       stars: repo.stargazers_count,
+//       updatedAt: repo.updated_at,
+//     }));
+//   }),
+
+//   connect: protectedProcedure
+//   .input(
+//     z.object({
+//       repos: z.array(
+//         z.object({
+//           githubId: z.number(),
+//           name: z.string(),
+//           fullName: z.string(),
+//           private: z.boolean(),
+//           htmlUrl: z.string(),
+//         }),
+//       ),
+//     }),
+//   )
+//   .mutation(async ({ ctx, input }) => {
+//     const result = await Promise.all(
+//       input.repos.map((repo) =>
+//         ctx.db.repository.upsert({
+//           where: {
+//             githubId: repo.githubId,
+//           },
+
+//           create: {
+//             userId: ctx.user.id,
+//             githubId: repo.githubId,
+//             name: cleanString(repo.name),
+//             fullName: cleanString(repo.fullName),
+//             private: repo.private,
+//             htmlUrl: cleanString(repo.htmlUrl),
+//           },
+
+//           update: {
+//             name: cleanString(repo.name),
+//             fullName: cleanString(repo.fullName),
+//             private: repo.private,
+//             htmlUrl: cleanString(repo.htmlUrl),
+//             updatedAt: new Date(),
+//           },
+//         }),
+//       ),
+//     );
+
+//     return {
+//       connected: result.length,
+//     };
+//   }),
+
+// });

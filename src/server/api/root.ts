@@ -5,6 +5,7 @@ import {
   createTRPCRouter,
   publicProcedure,
 } from "./trpc";
+import { reviewRouter } from "./routes/review";
 
 export const appRouter = createTRPCRouter({
   health: publicProcedure.query(() => ({
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 
   repository: repositoryRouter,
   pullRequest: pullRequestRouter,
+  review : reviewRouter
 });
 
 export type AppRouter = typeof appRouter;

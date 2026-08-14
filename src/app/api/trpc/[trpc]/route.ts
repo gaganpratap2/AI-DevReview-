@@ -11,4 +11,4 @@ const handler = (req : Request) => fetchRequestHandler({
     
 });
 
-export {handler as GET , handler as PORT };
+export {handler as GET , handler as POST };
