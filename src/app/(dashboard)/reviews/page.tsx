@@ -68,7 +68,7 @@ export default function ReviewsPage() {
     },
   );
 
-  const triggerReview = reviewApi.reviews.trigger.useMutation({
+  const triggerReview = reviewApi.review.trigger.useMutation({
     onSuccess: () => {
       reviews.refetch();
     },
@@ -115,7 +115,7 @@ export default function ReviewsPage() {
 
         <Button
           variant={"ghost"}
-          size={"icon-sm"}
+          size={"icon"}
           onClick={() => reviews.refetch()}
           disabled={reviews.isFetching}
         >
@@ -593,51 +593,3 @@ function formatRelativeTime(date: Date): string {
   );
 }
 
-
-// ### Why these fixes work
-
-// **Error 1/2 — `reviewApi` doesn't exist**
-
-// Your previous code had:
-
-// ```tsx
-// const reviews = reviewApi.review.list.useQuery(...)
-// ```
-
-// but the `reviewApi` declaration had disappeared. I restored:
-
-// ```tsx
-// const reviewApi = trpc as any;
-// ```
-
-// This preserves your current workaround for the missing tRPC `review` type.
-
-// **Error 3 — Badge variants**
-
-// Your `badge.tsx` doesn't define:
-
-// ```text
-// info
-// success
-// warning
-// ```
-
-// so I changed the actual `variant` values to supported ones:
-
-// ```tsx
-// "default"
-// "secondary"
-// "destructive"
-// ```
-
-// while preserving the **visual colors** through `className`.
-
-// So `COMPLETED` can still look green, `PROCESSING` blue, and `PENDING` amber without modifying `badge.tsx` or changing your UI logic.
-
-// After replacing the file, run:
-
-// ```bash
-// pnpm run build
-// ```
-
-// If another error appears, send me the **new build output**. We should keep fixing the errors one at a time rather than changing unrelated code.

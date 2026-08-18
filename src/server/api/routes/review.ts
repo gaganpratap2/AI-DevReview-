@@ -2,22 +2,22 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { inngest } from "@/server/inngest";
-import {
-  fetchPullRequest,
-  getGitHubAccessToken,
-} from "@/server/services/github";
+import { getGitHubAccessToken } from "@/server/services/github";
 
 export const reviewRouter = createTRPCRouter({
   trigger: protectedProcedure
     .input(
       z.object({
         repositoryId: z.string(),
-        prNumber: z.number(), 
+        prNumber: z.number().int().positive(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const repository = await ctx.db.repository.findUnique({
-        where: { id: input.repositoryId, userId: ctx.user.id },
+      const repository = await ctx.db.repository.findFirst({
+        where: {
+          id: input.repositoryId,
+          userId: ctx.user.id,
+        },
       });
 
       if (!repository) {
@@ -28,6 +28,7 @@ export const reviewRouter = createTRPCRouter({
       }
 
       const accessToken = await getGitHubAccessToken(ctx.user.id);
+
       if (!accessToken) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
@@ -36,6 +37,7 @@ export const reviewRouter = createTRPCRouter({
       }
 
       const [owner, repo] = repository.fullName.split("/");
+
       if (!owner || !repo) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -43,42 +45,61 @@ export const reviewRouter = createTRPCRouter({
         });
       }
 
-      const pr = await fetchPullRequest(
-        accessToken,
-        owner,
-        repo,
-        input.prNumber,
-      );
-
       const review = await ctx.db.review.create({
         data: {
           repositoryId: repository.id,
           userId: ctx.user.id,
-          prNumber: pr.number,
-          prTitle: pr.title,
-          prUrl: pr.html_url,
+          prNumber: input.prNumber,
+          prTitle: `PR #${input.prNumber}`,
+          prUrl: `https://github.com/${repository.fullName}/pull/${input.prNumber}`,
           status: "PENDING",
         },
       });
 
-      await inngest.send({
-        name: "review/pr.requested",
-        data: {
-          reviewId: review.id,
-          repositoryId: repository.id,
-          prNumber: pr.number,
+      try {
+        await inngest.send({
+          name: "review/pr.requested",
+          data: {
+            reviewId: review.id,
+            repositoryId: repository.id,
+            prNumber: input.prNumber,
+            userId: ctx.user.id,
+          },
+        });
+      } catch (error) {
+        await ctx.db.review.update({
+          where: { id: review.id },
+          data: { status: "FAILED" },
+        });
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to start code review",
+          cause: error,
+        });
+      }
+
+      return {
+        reviewId: review.id,
+        message: "Code review started successfully",
+      };
+    }),
+
+  get: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const review = await ctx.db.review.findFirst({
+        where: {
+          id: input.id,
           userId: ctx.user.id,
         },
-      });
-
-      return { reviewId: review.id };
-    }),
-  get: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const review = await ctx.db.review.findUnique({
-        where: { id: input.id, userId: ctx.user.id },
-        include: { repository: true },
+        include: {
+          repository: true,
+        },
       });
 
       if (!review) {
@@ -90,31 +111,39 @@ export const reviewRouter = createTRPCRouter({
 
       return review;
     }),
+
   list: protectedProcedure
     .input(
       z.object({
         repositoryId: z.string().optional(),
-        limit: z.number().min(1).max(50).default(20),
+        limit: z.number().int().min(1).max(50).default(20),
       }),
     )
     .query(async ({ ctx, input }) => {
       const reviews = await ctx.db.review.findMany({
         where: {
           userId: ctx.user.id,
-          ...(input.repositoryId && { repositoryId: input.repositoryId }),
+          ...(input.repositoryId
+            ? { repositoryId: input.repositoryId }
+            : {}),
         },
-        include: { repository: true },
-        orderBy: { createdAt: "desc" },
+        include: {
+          repository: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
         take: input.limit,
       });
 
       return reviews;
     }),
+
   getLatestForPR: protectedProcedure
     .input(
       z.object({
         repositoryId: z.string(),
-        prNumber: z.number(),
+        prNumber: z.number().int().positive(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -124,7 +153,12 @@ export const reviewRouter = createTRPCRouter({
           prNumber: input.prNumber,
           userId: ctx.user.id,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          repository: true,
+        },
       });
 
       return review;

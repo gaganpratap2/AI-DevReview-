@@ -225,19 +225,19 @@ export default function PullRequestDetailPage({ params }: PageProps) {
             <div className="flex items-center gap-6 px-6 py-4">
               <StatItem
                 icon={Plus}
-                value={pr.data.additions}
+                value={pr.data.additions ?? 0}
                 colorClass="text-emerald-600 dark:text-emerald-400"
                 bgClass="bg-emerald-500/10"
               />
               <StatItem
                 icon={Minus}
-                value={pr.data.deletions}
+                value={pr.data.deletions ?? 0}
                 colorClass="text-red-600 dark:text-red-400"
                 bgClass="bg-red-500/10"
               />
               <StatItem
                 icon={FileText}
-                value={pr.data.changedFiles}
+                value={pr.data.changedFiles ?? 0}
                 colorClass="text-muted-foreground dark:text-muted-foreground"
                 bgClass="bg-muted"
               />

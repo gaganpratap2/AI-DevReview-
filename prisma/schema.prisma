@@ -73,7 +73,7 @@ model Verification {
 model Repository {
   id        String   @id @default(cuid())
   userId    String
-  githubId  Int      @unique @map("hithub")
+  githubId  Int?      @unique 
   name      String
   fullName  String
   private   Boolean   @default(false)

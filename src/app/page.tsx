@@ -1,11 +1,10 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import {  ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 
 const DIFF_PREVIEW = [
@@ -64,8 +63,8 @@ export default function SignInPage() {
                     line.type === "add"
                       ? "bg-[#4FD68C]/[0.08] text-[#4FD68C]"
                       : line.type === "del"
-                      ? "bg-[#FF6B6B]/[0.08] text-[#FF6B6B]"
-                      : "text-[#98A2B3]"
+                        ? "bg-[#FF6B6B]/[0.08] text-[#FF6B6B]"
+                        : "text-[#98A2B3]"
                   }`}
                 >
                   <span className="w-3 select-none text-[#4A5468]">
@@ -200,45 +199,3 @@ export default function SignInPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { Button } from "@/components/ui/button";
-// import { HealthCheck } from "@/components/health-check";
-// import Image from "next/image";
-// import Link from "next/link";
-
-// export default function Home() {
-//   return (
-//     <div className="flex min-h-screen items-center justify-center">
-//      <div className="">
-//       <h1>Welcome to AicoCodeReviewer!</h1>
-//       <p>Start reviewing your code Now!</p>
-//      </div>
-//      <div className="flex gap-4">
-//       <Button >
-//         <Link href="/sign-in">Login</Link>
-//       </Button>
-
-//       <Button>
-//         <Link href="/sign-up">Sign Up</Link>
-//       </Button>
-
-//      </div>
-//      <HealthCheck />
-//     </div>
-//   );
-// }

@@ -1,7 +1,6 @@
 import {betterAuth} from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "../db";
-import { tr } from "zod/v4/locales";
 
 export const auth = betterAuth({
       database: prismaAdapter(db, {
@@ -14,7 +13,7 @@ export const auth = betterAuth({
         github : {
             clientId: process.env.GITHUB_CLIENT_ID!,
             clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-            scope : ["read : user" ,"user : email"  ,"repo"],
+            scope: ["read:user", "user:email", "repo"],
         },
     },
 
@@ -27,7 +26,7 @@ export const auth = betterAuth({
 
     session : {
         expiresIn:60 * 60 *24 * 7,
-        upadateAge:60 * 60 * 24,
+        updateAge: 60 * 60 * 24,
         cookieCache:{
             enabled : true,
             maxAge: 60 * 5,

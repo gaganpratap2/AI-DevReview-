@@ -383,7 +383,7 @@ function CommentCard({
               {copied ? (
                 <Check className="size-3.5 text-emerald-500" />
               ) : (
-                <Copy className="size-3.5 opacity-0 group-hover/file:opacity-100 trantransition-opacity" />
+                <Copy className="size-3.5 opacity-0 group-hover/file:opacity-100 transition-opacity" />
               )}
             </button>
           </div>
